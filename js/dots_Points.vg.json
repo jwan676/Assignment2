@@ -1,0 +1,98 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "./data/nobel_final.csv"},
+  "config": {"style": {"cell":{"stroke":"transparent"}}},
+  "padding":40,
+  "params": [  {  "name": "Year", 
+        "value": 2019,  
+        "bind": {  "input": "range", 
+                   "min": 1901,  "max": 2019,  "step": 1,  
+                   "name": "Year: " }  }, 
+               {"name": "hightlight","select":{"type": "point","fields": ["gender"]},"bind":"legend"}        
+         
+     ],
+       "spacing":10,
+       "vconcat":[  
+        { 
+           "width":150,
+          
+          "transform": [
+              {"filter":"datum.year <= Year"},
+              { "window": [{"op": "rank", "as": "id"}],
+                        "groupby": ["category"]},
+              {"calculate": "ceil (datum.id/10)", "as": "col"},
+              {"calculate": "datum.id - datum.col*10", "as": "row"},
+        {
+          "lookup": "country",
+          "from": {
+            "data": {"url": "./data/countries_centriod.csv"},
+            "key": "Short",
+            "fields": [ "Country"]
+          }},
+          {"calculate": "datum.firstname + ' ' + datum.surname","as": "fullname"}
+       
+      ],
+      "encoding": {
+        "y": {"field": "col", "type": "ordinal", "axis": null},
+        "x": {"field": "row", "type": "ordinal", "axis":null},
+        "shape": {
+          "value": "M1.7 -1.7h-0.8c0.3 -0.2 0.6 -0.5 0.6 -0.9c0 -0.6 -0.4 -1 -1 -1c-0.6 0 -1 0.4 -1 1c0 0.4 0.2 0.7 0.6 0.9h-0.8c-0.4 0 -0.7 0.3 -0.7 0.6v1.9c0 0.3 0.3 0.6 0.6 0.6h0.2c0 0 0 0.1 0 0.1v1.9c0 0.3 0.2 0.6 0.3 0.6h1.3c0.2 0 0.3 -0.3 0.3 -0.6v-1.8c0 0 0 -0.1 0 -0.1h0.2c0.3 0 0.6 -0.3 0.6 -0.6v-2c0.2 -0.3 -0.1 -0.6 -0.4 -0.6z"
+        },
+        "size":{"value":10},
+        "color":{
+          "field":"gender","type": "nominal",
+         "legend":{"symbolSize":20,"clipHeight":20},"title":null,
+          "scale":{
+            "domain":["female",  "male" ],
+                      "range": [  "#fc0580",  "steelblue"  ]  } },
+       
+        "opacity":{"condition":{"param": "hightlight","value":1},"value":0.2},
+        "tooltip":[ {"field": "fullname", "type": "nominal"},
+          {"field": "gender", "type": "nominal"},
+          {"field": "year", "type": "nominal","title":"Reward year"},
+          {"field": "age_get_prize", "type": "nominal","title":"Reward Age"},
+          {"field": "Country", "type": "nominal"},
+          {"field": "name_of_university", "type": "nominal","title":"University"}
+        ],
+      
+      "column": {"field":"category",
+                 "type": "nominal",
+                 "spacing": 10,
+                 "header":{"labelFontSize":14,"labelFontWeight":800,
+                           "title":"Nobel Prize Winners (1901-2019)",
+                           "titleFontWeight":800,"titleFontSize":18}}
+      },
+      "mark": {"type": "point", "filled": true},
+      "resolve": {"axis": {"x": "shared","y": "shared"}}
+    },
+    {   "width":"container",  
+       "transform": [
+
+            {"filter":"datum.year <= Year"}, 
+            {"aggregate": [{"op": "count","as": "countprize"}],"groupby": ["firstname","born_country_code","surname","gender"]},
+
+            {"window": [{"op":"rank","as": "rank"},{"op":"row_number","as": "row_number"}],"sort": [{"field": "countprize","order":"descending"}]}
+          , {"calculate": "' The most times Winner: Mrs'+' '+ datum.firstname + ' ' + datum.surname + ' . ' + 'She rewards'+ ' ' + datum.countprize + ' times'  ","as": "fullname"},
+ 
+            {"filter":"datum.rank === 1 && datum.countprize >= 1"}
+    ],
+    "encoding": {
+      "text":{"field":"fullname","type": "nominal"},
+      
+        "y":{"field":"row_number","type": "ordinal","title":null,"axis":null},
+        "color": {"value": "rgb(22, 114, 9)"},
+      "tooltip":[{"field":"age_get_prize"},
+      {"field":"gender"}]
+    },
+    "mark":{"type":"text","fontSize":14,"stroke": null}
+    }
+
+    
+    
+    
+    ]
+     
+    }
+  
+   
+

@@ -1,0 +1,66 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "data": {"url": "./data/nobel_final.csv"},
+    "config": {"style": {"cell":{"stroke":"transparent"}}},
+    "params": [  {  "name": "Year", 
+        "value": 2019,  
+        "bind": {  "input": "range", 
+                   "min": 1901,  "max": 2019,  "step": 1,  
+                   "name": "Year: " }  }, 
+         
+     {  "name": "Subject_selection",  
+        "bind": {  "input": "select",  
+                  "options": [  null,  
+                               "physics", 
+                               "chemistry", 
+                               "medicine",  
+                               "peace", 
+                               "literature",  
+                               "economics"  ],  
+                    "labels":[  "Show All", 
+                                "physics",  
+                                "chemistry", 
+                                "medicine", 
+                                "peace", 
+                                "literature",   
+                                "economics"  ],  
+                                "name": "Category Selection: "  }  }  ], 
+    "padding":40,
+    "width":"container",
+    "transform": [
+        {"filter": "datum.year <= Year"}, 
+         {"filter": "Subject_selection == null || datum.category == Subject_selection"},
+         {"aggregate": [{"op": "count","field": "*","as": "winnerbyGender"}],"groupby": ["gender"]},
+         {
+            "joinaggregate": [{
+              "op": "sum",
+              "field": "winnerbyGender",
+              "as": "Totalwinner"
+            }]
+          },
+          {"calculate": "ceil(datum.winnerbyGender/datum.Totalwinner*100)","as": "PencentOfTotal"},
+          {"calculate": "datum.PencentOfTotal+'%' ","as": "percentage"}
+      ],
+      "encoding": {
+        "theta": {"field":"PencentOfTotal","type":"quantitative", "stack": true},
+        "radius": {"field": "PencentOfTotal", "scale": {"type": "sqrt", "zero": true, "rangeMin": 30}},
+        "color": {"field": "gender", "type": "nominal", "legend":{"type":"symbol" }, 
+        "scale":{
+          "domain":["female",  "male" ],
+                    "range": [  "#fc0580",  "steelblue"  ]  } }
+      },
+      "layer":[
+        
+          { 
+            "mark": {"type": "arc", "innerRadius": 30, "stroke": "#fff"}},
+          {
+           
+            "mark": {"type": "text", "radiusOffset": 30},
+            "encoding": {
+              "text": {"field": "percentage", "type": "nominal"}
+            }
+          }
+      ]
+     
+    
+}
